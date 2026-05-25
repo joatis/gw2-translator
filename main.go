@@ -22,7 +22,7 @@ func main() {
 
 	// 3. Apply Thresholding (Binarization)
 	// We iterate through each pixel. If it's brite make it pure white. If dark pure black.
-	binarizedimg := binarize(grayImg, 128) // 128 is the midpoint threshold (0-255)
+	binarizedImg := binarize(grayImg, 128) // 128 is the midpoint threshold (0-255)
 
 	//  4. Save the processed image for Tesseract to use later
 	outputPath := "images/processed_runes.png"
