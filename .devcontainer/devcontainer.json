@@ -1,0 +1,18 @@
+{
+  "name": "GW2 Translator Lab",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.Go",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  // Allows the container to talk to Ollama running on your Windows host
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ]
+}
