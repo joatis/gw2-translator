@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// 1. Load the original screenshot from the /images folder
-	inputPath := "images/gw005.jpg"
+	inputPath := "images/gw005_clipped.jpg"
 	src, err := imaging.Open(inputPath)
 	if err != nil {
 		log.Fatalf("Failed to open image: %v", err)
@@ -24,9 +24,12 @@ func main() {
 	// We iterate through each pixel. If it's brite make it pure white. If dark pure black.
 	binarizedImg := binarize(grayImg, 128) // 128 is the midpoint threshold (0-255)
 
+	// 3a. OCR has a hard time reading characters < 30px in height. So we can scale the image up to make it easier for Tesseract to read.
+	scaledImg := imaging.Resize(binarizedImg, binarizedImg.Bounds().Dx()*3, 0, imaging.Lanczos) // Scale height to 100px, width auto-adjusts to maintain aspect ratio
+
 	//  4. Save the processed image for Tesseract to use later
 	outputPath := "images/processed_runes.png"
-	err = imaging.Save(binarizedImg, outputPath)
+	err = imaging.Save(scaledImg, outputPath)
 	if err != nil {
 		log.Fatalf("Failed to save image %v", err)
 	}
