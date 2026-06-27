@@ -2,64 +2,25 @@ package main
 
 import (
 	"fmt"
-	"image"
-	"image/color"
+	"gw2-translator/imgproc"
 	"log"
 
 	"github.com/disintegration/imaging"
 )
 
 func main() {
-	// 1. Load the original screenshot from the /images folder
-	inputPath := "images/gw005_clipped.jpg"
-	src, err := imaging.Open(inputPath)
+	src, err := imaging.Open("images/gw005_clipped.jpg")
 	if err != nil {
-		log.Fatalf("Failed to open image: %v", err)
+		log.Fatalf("failed to open image: %v", err)
 	}
 
-	// 2. Convert the image to a grayscale to remove color data
-	grayImg := imaging.Grayscale(src)
+	// Call your modular package logic cleanly
+	binaryImg := imgproc.ApplyAdaptiveThreshold(imaging.Grayscale(src), 15)
 
-	// 3. Apply Thresholding (Binarization)
-	// We iterate through each pixel. If it's brite make it pure white. If dark pure black.
-	binarizedImg := binarize(grayImg, 128) // 128 is the midpoint threshold (0-255)
-
-	// 3a. OCR has a hard time reading characters < 30px in height. So we can scale the image up to make it easier for Tesseract to read.
-	scaledImg := imaging.Resize(binarizedImg, binarizedImg.Bounds().Dx()*3, 0, imaging.Lanczos) // Scale height to 100px, width auto-adjusts to maintain aspect ratio
-
-	//  4. Save the processed image for Tesseract to use later
-	outputPath := "images/processed_runes.png"
-	err = imaging.Save(scaledImg, outputPath)
+	err = imaging.Save(binaryImg, "images/gw005_adaptive.jpg")
 	if err != nil {
-		log.Fatalf("Failed to save image %v", err)
+		log.Fatalf("failed to save image: %v", err)
 	}
 
-	fmt.Printf("Success! Processed image saved to %s\n", outputPath)
-}
-
-// binarize applies a hard threshold to a grayscale image.
-func binarize(img image.Image, threshold uint8) image.Image {
-	bounds := img.Bounds()
-	w, h := bounds.Dx(), bounds.Dy()
-
-	// Create a new blank grayscale image canvas
-	result := image.NewGray(bounds)
-
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-			// Get the current pixels color
-			oldColor := color.GrayModel.Convert(img.At(x, y)).(color.Gray)
-
-			// Determine if the pixel is above or below our brightness threshold.
-			var newColor uint8
-			if oldColor.Y > threshold {
-				newColor = 255 // Pure White
-			} else {
-				newColor = 0 // Pure Black
-			}
-
-			result.SetGray(x, y, color.Gray{Y: newColor})
-		}
-	}
-	return result
+	fmt.Println("Pipeline complete!")
 }
